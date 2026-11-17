@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ဘဏ္ဍာရေး စီမံခန့်ခွဲမှုစနစ်</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Pyidaungsu:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Pyidaungsu', sans-serif;
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-blue-600 text-white shadow-md">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-wallet text-xl"></i>
+                <h1 class="text-base font-bold">ဘဏ္ဍာရေး စီမံခန့်ခွဲမှု</h1>
+            </div>
+            <div class="text-xs bg-blue-700 px-2.5 py-1 rounded-full font-medium">
+                ฿ (ဘတ်)
+            </div>
+        </div>
+        <!-- Navigation Tabs -->
+        <div class="bg-blue-700 px-3 py-2 flex space-x-2 overflow-x-auto text-xs">
+            <button onclick="switchTab('dashboard')" id="btn-dashboard" class="tab-btn px-3 py-1.5 rounded-lg bg-white text-blue-700 font-bold whitespace-nowrap transition shadow-sm"><i class="fa-solid fa-chart-pie mr-1"></i> ပင်မ</button>
+            <button onclick="switchTab('transactions')" id="btn-transactions" class="tab-btn px-3 py-1.5 rounded-lg text-white hover:bg-blue-600 whitespace-nowrap transition"><i class="fa-solid fa-right-left mr-1"></i> ဝင်/ထွက်ငွေ</button>
+            <button onclick="switchTab('interest')" id="btn-interest" class="tab-btn px-3 py-1.5 rounded-lg text-white hover:bg-blue-600 whitespace-nowrap transition"><i class="fa-solid fa-percent mr-1"></i> အတိုး/ရင်းနှီး</button>
+            <button onclick="switchTab('report')" id="btn-report" class="tab-btn px-3 py-1.5 rounded-lg text-white hover:bg-blue-600 whitespace-nowrap transition"><i class="fa-solid fa-file-lines mr-1"></i> Report</button>
+            <button onclick="switchTab('reportAll')" id="btn-reportAll" class="tab-btn px-3 py-1.5 rounded-lg text-white hover:bg-blue-600 whitespace-nowrap transition"><i class="fa-solid fa-calendar-days mr-1"></i> Report All</button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-4xl w-full mx-auto p-3 space-y-4 mb-16">
+
+        <!-- 1. DASHBOARD TAB -->
+        <div id="dashboard" class="tab-content active space-y-3">
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                <h2 class="text-gray-500 text-xs font-medium">စုစုပေါင်း လက်ကျန်ငွေ</h2>
+                <p id="dash-balance" class="text-2xl font-bold text-blue-600 mt-1">฿ 0.00</p>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-gray-100">
+                    <h2 class="text-gray-500 text-xs font-medium">စုစုပေါင်း ဝင်ငွေ</h2>
+                    <p id="dash-income" class="text-lg font-bold text-green-600 mt-1">฿ 0.00</p>
+                </div>
+                <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-gray-100">
+                    <h2 class="text-gray-500 text-xs font-medium">စုစုပေါင်း ထွက်ငွေ</h2>
+                    <p id="dash-expense" class="text-lg font-bold text-red-600 mt-1">฿ 0.00</p>
+                </div>
+            </div>
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                <h2 class="text-gray-800 font-bold mb-3 text-sm"><i class="fa-solid fa-bolt text-amber-500 mr-1.5"></i> အမြန်လုပ်ဆောင်ချက်များ</h2>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="switchTab('transactions')" class="p-2.5 bg-blue-50 text-blue-700 rounded-xl text-xs font-semibold hover:bg-blue-100 transition text-left"><i class="fa-solid fa-plus-circle mr-1.5"></i> ဝင်/ထွက်ငွေ ထည့်မည်</button>
+                    <button onclick="switchTab('interest')" class="p-2.5 bg-purple-50 text-purple-700 rounded-xl text-xs font-semibold hover:bg-purple-100 transition text-left"><i class="fa-solid fa-percent mr-1.5"></i> အတိုး/ရင်းနှီး တွက်မည်</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. TRANSACTIONS TAB -->
+        <div id="transactions" class="tab-content space-y-3">
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                <h2 class="text-base font-bold mb-3 text-gray-800"><i class="fa-solid fa-right-left mr-1.5 text-blue-600"></i> ဝင်ငွေ / ထွက်ငွေ မှတ်တမ်း</h2>
+                
+                <form id="tx-form" onsubmit="saveTransaction(event)" class="space-y-2.5">
+                    <input type="hidden" id="tx-id">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">အမျိုးအစား</label>
+                        <select id="tx-type" class="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option value="income">ဝင်ငွေ (Income)</option>
+                            <option value="expense">ထွက်ငွေ (Expense)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">ခေါင်းစဉ် / အကြောင်းအရာ</label>
+                        <input type="text" id="tx-title" required placeholder="ဥပမာ - လစာ၊ ရုံးစရိတ်" class="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">ပမာဏ (ဘတ် - ฿)</label>
+                        <input type="number" step="any" id="tx-amount" required placeholder="0.00" class="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">စတင်သည့်လ</label>
+                            <input type="month" id="tx-start-month" required class="w-full p-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">ကုန်ဆုံးမည့်လ</label>
+                            <input type="month" id="tx-end-month" class="w-full p-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full py-2.5 bg-blue-600 text-white rounded-xl font-semibold text-xs hover:bg-blue-700 transition shadow-sm mt-1">သိမ်းဆည်းမည်</button>
+                </form>
+            </div>
+
+            <!-- Transaction List -->
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                <h3 class="font-bold text-gray-800 mb-2.5 text-xs">စာရင်းများ</h3>
+                <div id="tx-list" class="space-y-2 max-h-52 overflow-y-auto"></div>
+            </div>
+        </div>
+
+        <!-- 3. INTEREST TAB -->
+        <div id="interest" class="tab-content space-y-3">
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                <h2 class="text-base font-bold mb-3 text-gray-800"><i class="fa-solid fa-percent mr-1.5 text-purple-600"></i> အတိုးချ / ရင်းပြန်ချငွေ</h2>
+                
+                <form id="int-form" onsubmit="saveInterest(event)" class="space-y-2.5">
+                    <input type="hidden" id="int-id">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">အမျိုးအစား</label>
+                        <select id="int-type" onchange="toggleIntFields()" class="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-purple-500 outline-none">
+                            <option value="interest_only">အတိုးချငွေ (Interest Only)</option>
+                            <option value="principal_interest">တိုး + ရင်းပြန်ချငွေ (Principal + Interest)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">အမည် / ခေါင်းစဉ်</label>
+                        <input type="text" id="int-title" required placeholder="ဥပမာ - ချေးငွေ အတိုး" class="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-purple-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">ရင်းနှီးငွေ / မူလလက်ကျန် (ဘတ် - ฿)</label>
+                        <input type="number" step="any" id="int-principal" required placeholder="0.00" class="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-purple-500 outline-none">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">အတိုးနှုန်း (%)</label>
+                            <input type="number" step="any" id="int-rate" required placeholder="ဥပမာ - 5" class="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-purple-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">စတင်သည့်လ</label>
+                            <input type="month" id="int-start-month" required class="w-full p-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-purple-500 outline-none">
+                        </div>
+                    </div>
+                    <div id="pi-fields" class="hidden">
+                        <label class="block text-xs font-medium text-gray-600 mb-1">ပြန်ဆပ်မည့် ရင်းနှီးငွေ ပမာဏ (ဘတ် - ฿)</label>
+                        <input type="number" step="any" id="int-repay-amount" placeholder="0.00" class="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-purple-500 outline-none">
+                    </div>
+                    <button type="submit" class="w-full py-2.5 bg-purple-600 text-white rounded-xl font-semibold text-xs hover:bg-purple-700 transition shadow-sm mt-1">သိမ်းဆည်းမည်</button>
+                </form>
+            </div>
+
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                <h3 class="font-bold text-gray-800 mb-2.5 text-xs">အတိုး/ရင်းနှီး စာရင်းများ</h3>
+                <div id="int-list" class="space-y-2 max-h-52 overflow-y-auto"></div>
+            </div>
+        </div>
+
+        <!-- 4. REPORT TAB -->
+        <div id="report" class="tab-content space-y-3">
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="text-base font-bold text-gray-800"><i class="fa-solid fa-file-lines mr-1.5 text-blue-600"></i> လစဉ် Report</h2>
+                    <input type="month" id="report-month-picker" onchange="renderReport()" class="p-2 bg-gray-50 border border-gray-200 rounded-xl text-xs outline-none">
+                </div>
+                <div id="report-content" class="space-y-2.5"></div>
+            </div>
+        </div>
+
+        <!-- 5. REPORT ALL TAB -->
+        <div id="reportAll" class="tab-content space-y-3">
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                <h2 class="text-base font-bold mb-1 text-gray-800"><i class="fa-solid fa-calendar-days mr-1.5 text-green-600"></i> Report All (၅-၆ နှစ်စာ)</h2>
+                <p class="text-xs text-gray-500 mb-3">လတစ်ခုချင်းစီကို နှိပ်၍ သက်ဆိုင်ရာ Report သို့ သွားနိုင်ပါသည်။</p>
+                <div id="report-all-content" class="space-y-2 max-h-96 overflow-y-auto"></div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Script Logic -->
+    <script>
+        let transactions = JSON.parse(localStorage.getItem('fin_transactions')) || [];
+        let interests = JSON.parse(localStorage.getItem('fin_interests')) || [];
+
+        function saveData() {
+            localStorage.setItem('fin_transactions', JSON.stringify(transactions));
+            localStorage.setItem('fin_interests', JSON.stringify(interests));
+            updateDashboard();
+            renderTxList();
+            renderIntList();
+            renderReportAll();
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('bg-white', 'text-blue-700', 'font-bold', 'shadow-sm');
+                el.classList.add('text-white');
+            });
+            
+            document.getElementById(tabId).classList.add('active');
+            let btn = document.getElementById('btn-' + tabId);
+            btn.classList.add('bg-white', 'text-blue-700', 'font-bold', 'shadow-sm');
+            btn.classList.remove('text-white');
+
+            if(tabId === 'report') renderReport();
+            if(tabId === 'reportAll') renderReportAll();
+        }
+
+        function formatCurrency(amount) {
+            return '฿ ' + Number(amount).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        }
+
+        function saveTransaction(e) {
+            e.preventDefault();
+            const id = document.getElementById('tx-id').value;
+            const item = {
+                id: id ? Number(id) : Date.now(),
+                type: document.getElementById('tx-type').value,
+                title: document.getElementById('tx-title').value,
+                amount: parseFloat(document.getElementById('tx-amount').value),
+                startMonth: document.getElementById('tx-start-month').value,
+                endMonth: document.getElementById('tx-end-month').value || document.getElementById('tx-start-month').value
+            };
+
+            if(id) {
+                transactions = transactions.map(t => t.id == id ? item : t);
+            } else {
+                transactions.push(item);
+            }
+
+            document.getElementById('tx-form').reset();
+            document.getElementById('tx-id').value = '';
+            saveData();
+        }
+
+        function renderTxList() {
+            const list = document.getElementById('tx-list');
+            list.innerHTML = transactions.length === 0 ? '<p class="text-xs text-gray-400 text-center py-3">မှတ်တမ်း မရှိသေးပါ</p>' : '';
+            transactions.forEach(t => {
+                list.innerHTML += `
+                    <div class="flex justify-between items-center p-2.5 bg-gray-50 rounded-xl text-xs border border-gray-100">
+                        <div>
+                            <span class="font-bold ${t.type === 'income' ? 'text-green-600' : 'text-red-600'}">${t.title}</span>
+                            <div class="text-[10px] text-gray-500">${t.startMonth} မှ ${t.endMonth} ထိ</div>
+                        </div>
+                        <div class="flex items-center space-x-2.5">
+                            <span class="font-bold">${formatCurrency(t.amount)}</span>
+                            <button onclick="editTx(${t.id})" class="text-blue-500 hover:text-blue-700"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="deleteTx(${t.id})" class="text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function editTx(id) {
+            const t = transactions.find(x => x.id === id);
+            if(!t) return;
+            document.getElementById('tx-id').value = t.id;
+            document.getElementById('tx-type').value = t.type;
+            document.getElementById('tx-title').value = t.title;
+            document.getElementById('tx-amount').value = t.amount;
+            document.getElementById('tx-start-month').value = t.startMonth;
+            document.getElementById('tx-end-month').value = t.endMonth;
+        }
+
+        function deleteTx(id) {
+            transactions = transactions.filter(x => x.id !== id);
+            saveData();
+        }
+
+        function toggleIntFields() {
+            const type = document.getElementById('int-type').value;
+            const piFields = document.getElementById('pi-fields');
+            if(type === 'principal_interest') {
+                piFields.classList.remove('hidden');
+            } else {
+                piFields.classList.add('hidden');
+            }
+        }
+
+        function saveInterest(e) {
+            e.preventDefault();
+            const id = document.getElementById('int-id').value;
+            const type = document.getElementById('int-type').value;
+            const item = {
+                id: id ? Number(id) : Date.now(),
+                type: type,
+                title: document.getElementById('int-title').value,
+                principal: parseFloat(document.getElementById('int-principal').value),
+                rate: parseFloat(document.getElementById('int-rate').value),
+                startMonth: document.getElementById('int-start-month').value,
+                repayAmount: type === 'principal_interest' ? parseFloat(document.getElementById('int-repay-amount').value) || 0 : 0
+            };
+
+            if(id) {
+                interests = interests.map(i => i.id == id ? item : i);
+            } else {
+                interests.push(item);
+            }
+
+            document.getElementById('int-form').reset();
+            document.getElementById('int-id').value = '';
+            toggleIntFields();
+            saveData();
+        }
+
+        function renderIntList() {
+            const list = document.getElementById('int-list');
+            list.innerHTML = interests.length === 0 ? '<p class="text-xs text-gray-400 text-center py-3">အတိုး/ရင်းနှီး မှတ်တမ်း မရှိသေးပါ</p>' : '';
+            interests.forEach(i => {
+                list.innerHTML += `
+                    <div class="flex justify-between items-center p-2.5 bg-gray-50 rounded-xl text-xs border border-gray-100">
+                        <div>
+                            <span class="font-bold text-purple-700">${i.title}</span>
+                            <div class="text-[10px] text-gray-500">မူလ: ${formatCurrency(i.principal)} | အတိုး: ${i.rate}%</div>
+                        </div>
+                        <div class="flex items-center space-x-2.5">
+                            <button onclick="editInt(${i.id})" class="text-blue-500 hover:text-blue-700"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="deleteInt(${i.id})" class="text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function editInt(id) {
+            const i = interests.find(x => x.id === id);
+            if(!i) return;
+            document.getElementById('int-id').value = i.id;
+            document.getElementById('int-type').value = i.type;
+            toggleIntFields();
+            document.getElementById('int-title').value = i.title;
+            document.getElementById('int-principal').value = i.principal;
+            document.getElementById('int-rate').value = i.rate;
+            document.getElementById('int-start-month').value = i.startMonth;
+            if(i.type === 'principal_interest') {
+                document.getElementById('int-repay-amount').value = i.repayAmount;
+            }
+        }
+
+        function deleteInt(id) {
+            interests = interests.filter(x => x.id !== id);
+            saveData();
+        }
+
+        function updateDashboard() {
+            let totalIncome = 0;
+            let totalExpense = 0;
+            transactions.forEach(t => {
+                if(t.type === 'income') totalIncome += t.amount;
+                else totalExpense += t.amount;
+            });
+            let net = totalIncome - totalExpense;
+            document.getElementById('dash-balance').innerText = formatCurrency(net);
+            document.getElementById('dash-income').innerText = formatCurrency(totalIncome);
+            document.getElementById('dash-expense').innerText = formatCurrency(totalExpense);
+        }
+
+        function getAllMonths() {
+            let months = [];
+            let startYear = 2026;
+            let startMonth = 1;
+            
+            transactions.forEach(t => {
+                if(t.startMonth) {
+                    let parts = t.startMonth.split('-');
+                    let y = parseInt(parts[0]);
+                    let m = parseInt(parts[1]);
+                    if(y < startYear) { startYear = y; startMonth = m; }
+                }
+            });
+
+            let curY = startYear;
+            let curM = startMonth;
+            for(let i=0; i<72; i++) {
+                let mStr = curM < 10 ? '0' + curM : curM;
+                months.push(`${curY}-${mStr}`);
+                curM++;
+                if(curM > 12) { curM = 1; curY++; }
+            }
+            return months;
+        }
+
+        function calculateMonthData(monthStr) {
+            let incList = [];
+            let expList = [];
+            let totalInc = 0;
+            let totalExp = 0;
+
+            transactions.forEach(t => {
+                if(monthStr >= t.startMonth && monthStr <= t.endMonth) {
+                    if(t.type === 'income') {
+                        incList.push(t);
+                        totalInc += t.amount;
+                    } else {
+                        expList.push(t);
+                        totalExp += t.amount;
+                    }
+                }
+            });
+
+            let totalInterestPaid = 0;
+            let totalRemainingPrincipal = 0;
+
+            interests.forEach(i => {
+                if(monthStr >= i.startMonth) {
+                    let sParts = i.startMonth.split('-');
+                    let sDate = new Date(parseInt(sParts[0]), parseInt(sParts[1])-1, 1);
+                    let cParts = monthStr.split('-');
+                    let cDate = new Date(parseInt(cParts[0]), parseInt(cParts[1])-1, 1);
+
+                    let diffMonths = (cDate.getFullYear() - sDate.getFullYear()) * 12 + (cDate.getMonth() - sDate.getMonth());
+
+                    if(diffMonths >= 1) {
+                        let interestAmt = (i.principal * i.rate) / 100;
+                        totalInterestPaid += interestAmt;
+                    }
+                    totalRemainingPrincipal += i.principal;
+                }
+            });
+
+            let netBalance = totalInc - totalExp - totalInterestPaid;
+
+            return {
+                month: monthStr,
+                incomeList: incList,
+                expenseList: expList,
+                totalIncome: totalInc,
+                totalExpense: totalExp,
+                interestPaid: totalInterestPaid,
+                remainingPrincipal: totalRemainingPrincipal,
+                netBalance: netBalance
+            };
+        }
+
+        function renderReport() {
+            let picker = document.getElementById('report-month-picker');
+            if(!picker.value) {
+                let now = new Date();
+                let m = (now.getMonth() + 1).toString().padStart(2, '0');
+                picker.value = `${now.getFullYear()}-${m}`;
+            }
+
+            let monthStr = picker.value;
+            let data = calculateMonthData(monthStr);
+            let container = document.getElementById('report-content');
+
+            let html = `
+                <div class="bg-blue-50 p-3.5 rounded-2xl border border-blue-100">
+                    <div class="text-xs font-bold text-blue-800">လ ( ${data.month} ) အကျဉ်းချုပ်</div>
+                    <div class="mt-2 grid grid-cols-2 gap-2 text-xs">
+                        <div>လက်ကျန်: <span class="font-bold">${formatCurrency(data.netBalance)}</span></div>
+                        <div>အတိုးချငွေ: <span class="font-bold text-purple-700">${formatCurrency(data.interestPaid)}</span></div>
+                        <div class="col-span-2">မူလလက်ကျန်: <span class="font-bold">${formatCurrency(data.remainingPrincipal)}</span></div>
+                    </div>
+                </div>
+
+                <div class="space-y-2 mt-3">
+                    <h3 class="font-bold text-gray-800 text-xs">ဝင်ငွေများ</h3>
+            `;
+
+            if(data.incomeList.length === 0) {
+                html += `<p class="text-[11px] text-gray-400">ဝင်ငွေ မရှိပါ</p>`;
+            } else {
+                data.incomeList.forEach(item => {
+                    html += `<div class="flex justify-between text-xs p-2 bg-gray-50 rounded-xl"><span>${item.title}</span><span class="font-bold text-green-600">+${formatCurrency(item.amount)}</span></div>`;
+                });
+            }
+
+            html += `<h3 class="font-bold text-gray-800 text-xs mt-3">ထွက်ငွေများ</h3>`;
+            if(data.expenseList.length === 0) {
+                html += `<p class="text-[11px] text-gray-400">ထွက်ငွေ မရှိပါ</p>`;
+            } else {
+                data.expenseList.forEach(item => {
+                    html += `<div class="flex justify-between text-xs p-2 bg-gray-50 rounded-xl"><span>${item.title}</span><span class="font-bold text-red-600">-${formatCurrency(item.amount)}</span></div>`;
+                });
+            }
+
+            container.innerHTML = html;
+        }
+
+        function renderReportAll() {
+            let container = document.getElementById('report-all-content');
+            let months = getAllMonths();
+            let html = '';
+
+            months.forEach(mStr => {
+                let data = calculateMonthData(mStr);
+                html += `
+                    <div onclick="goToMonthReport('${mStr}')" class="flex justify-between items-center p-3 bg-gray-50 rounded-xl border border-gray-100 hover:bg-blue-50 cursor-pointer transition">
+                        <div>
+                            <span class="font-bold text-blue-600 text-xs">${mStr}</span>
+                            <div class="text-[10px] text-gray-500">လက်ကျန်: ${formatCurrency(data.netBalance)}</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-[10px] text-gray-500">အတိုးချငွေ</div>
+                            <span class="font-bold text-purple-700 text-xs">${formatCurrency(data.interestPaid)}</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function goToMonthReport(monthStr) {
+            switchTab('report');
+            document.getElementById('report-month-picker').value = monthStr;
+            renderReport();
+        }
+
+        window.onload = function() {
+            updateDashboard();
+            renderTxList();
+            renderIntList();
+        };
+    </script>
+</body>
+</html>
