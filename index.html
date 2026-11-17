@@ -403,8 +403,8 @@
                 }
             });
 
-            let totalInterestPaid = 0;
-            let totalRemainingPrincipal = 0;
+            let totalInterestAmount = 0; // အတိုးရငွေ (%)
+            let totalPrincipalPaid = 0;   // အတိုးချထားသည့် အရင်း (Principal)
 
             interests.forEach(i => {
                 if(monthStr >= i.startMonth) {
@@ -417,13 +417,14 @@
 
                     if(diffMonths >= 1) {
                         let interestAmt = (i.principal * i.rate) / 100;
-                        totalInterestPaid += interestAmt;
+                        totalInterestAmount += interestAmt;
                     }
-                    totalRemainingPrincipal += i.principal;
+                    totalPrincipalPaid += i.principal;
                 }
             });
 
-            let netBalance = totalInc - totalExp - totalInterestPaid;
+            // လက်ကျန် = ဝင်ငွေ - ထွက်ငွေ + အတိုးရငွေ(%)
+            let netBalance = totalInc - totalExp + totalInterestAmount;
 
             return {
                 month: monthStr,
@@ -431,8 +432,8 @@
                 expenseList: expList,
                 totalIncome: totalInc,
                 totalExpense: totalExp,
-                interestPaid: totalInterestPaid,
-                remainingPrincipal: totalRemainingPrincipal,
+                interestAmount: totalInterestAmount, // အတိုးရငွေ (%)
+                principalPaid: totalPrincipalPaid,     // အတိုးချထားသည့် ရင်းနှီးငွေ
                 netBalance: netBalance
             };
         }
@@ -453,9 +454,9 @@
                 <div class="bg-blue-50 p-3.5 rounded-2xl border border-blue-100">
                     <div class="text-xs font-bold text-blue-800">လ ( ${data.month} ) အကျဉ်းချုပ်</div>
                     <div class="mt-2 grid grid-cols-2 gap-2 text-xs">
-                        <div>လက်ကျန်: <span class="font-bold">${formatCurrency(data.netBalance)}</span></div>
-                        <div>အတိုးချငွေ: <span class="font-bold text-purple-700">${formatCurrency(data.interestPaid)}</span></div>
-                        <div class="col-span-2">မူလလက်ကျန်: <span class="font-bold">${formatCurrency(data.remainingPrincipal)}</span></div>
+                        <div>လက်ကျန် (+အတိုး%): <span class="font-bold">${formatCurrency(data.netBalance)}</span></div>
+                        <div>အတိုးချထားငွေ (ရင်း): <span class="font-bold text-purple-700">${formatCurrency(data.principalPaid)}</span></div>
+                        <div class="col-span-2">ရရှိသည့် အတိုး (%): <span class="font-bold text-green-600">+${formatCurrency(data.interestAmount)}</span></div>
                     </div>
                 </div>
 
@@ -494,11 +495,11 @@
                     <div onclick="goToMonthReport('${mStr}')" class="flex justify-between items-center p-3 bg-gray-50 rounded-xl border border-gray-100 hover:bg-blue-50 cursor-pointer transition">
                         <div>
                             <span class="font-bold text-blue-600 text-xs">${mStr}</span>
-                            <div class="text-[10px] text-gray-500">လက်ကျန်: ${formatCurrency(data.netBalance)}</div>
+                            <div class="text-[10px] text-gray-500">လက်ကျန် (+အတိုး%): ${formatCurrency(data.netBalance)}</div>
                         </div>
                         <div class="text-right">
-                            <div class="text-[10px] text-gray-500">အတိုးချငွေ</div>
-                            <span class="font-bold text-purple-700 text-xs">${formatCurrency(data.interestPaid)}</span>
+                            <div class="text-[10px] text-gray-500">အတိုးချထားငွေ (ရင်း)</div>
+                            <span class="font-bold text-purple-700 text-xs">${formatCurrency(data.principalPaid)}</span>
                         </div>
                     </div>
                 `;
